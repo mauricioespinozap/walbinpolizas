@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Pólizas - Walbin Sánchez Enterprise</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = 'https://vxitxqefqemukrctbeom.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable__Dqgsy_BkJZwNr7zg1idCQ_3a8hLFix';
+
+        const { createClient } = supabase;
+        const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let todasLasPolizas = [];
+
+        window.manejarTipoPoliza = function() {
+            const tipoSelect = document.getElementById('tipo').value;
+            const contenedorDinamico = document.getElementById('contenedorDinamicoTipo');
+            contenedorDinamico.innerHTML = '';
+
+            if (tipoSelect === 'Vehiculo') {
+                contenedorDinamico.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Número de Placa</label>
+                        <input type="text" class="form-control" id="detallePlaca" required placeholder="Ej. ABC-123">
+                    </div>
+                `;
+            } else if (tipoSelect === 'Vivienda') {
+                contenedorDinamico.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Número de Finca</label>
+                        <input type="text" class="form-control" id="detalleFinca" placeholder="Ej. G-123456-000">
+                    </div>
+                `;
+            } else if (tipoSelect === 'Otros') {
+                contenedorDinamico.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Especifique el tipo</label>
+                        <input type="text" class="form-control" id="detalleOtro" required placeholder="Ej. INCENDIO TODO RIESGO...">
+                    </div>
+                `;
+            }
+        };
+
+        window.manejarFrecuenciaPago = function() {
+            const frecuenciaSelect = document.getElementById('frecuencia').value;
+            const contenedorDinamicoFrecuencia = document.getElementById('contenedorDinamicoFrecuencia');
+            contenedorDinamicoFrecuencia.innerHTML = '';
+
+            if (frecuenciaSelect === 'Otros') {
+                contenedorDinamicoFrecuencia.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Especifique la frecuencia</label>
+                        <input type="text" class="form-control" id="detalleFrecuenciaOtro" required placeholder="Ej. Quincenal, Bi-anual...">
+                    </div>
+                `;
+            }
+        };
+
+        window.manejarMonedaPagar = function() {
+            const monedaSelect = document.getElementById('monedaPagar').value;
+            const contenedorMonedaOtro = document.getElementById('contenedorMonedaOtro');
+            contenedorMonedaOtro.innerHTML = '';
+
+            if (monedaSelect === 'Otros') {
+                contenedorMonedaOtro.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Especifique otra moneda</label>
+                        <input type="text" class="form-control" id="detalleMonedaOtro" required placeholder="Ej. EUR">
+                    </div>
+                `;
+            }
+        };
+
+        window.guardarPoliza = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnGuardar');
+            const idEditando = document.getElementById('idEditando').value;
+            btn.textContent = 'Guardando en la nube...';
+            btn.disabled = true;
+
+            const tipoSeleccionado = document.getElementById('tipo').value;
+            let detalleAdicional = '';
+
+            if (tipoSeleccionado === 'Vehiculo') {
+                detalleAdicional = document.getElementById('detallePlaca')?.value.trim() || '';
+            } else if (tipoSeleccionado === 'Vivienda') {
+                detalleAdicional = document.getElementById('detalleFinca')?.value.trim() || '';
+            } else if (tipoSeleccionado === 'Otros') {
+                detalleAdicional = document.getElementById('detalleOtro')?.value.trim() || '';
+            }
+
+            const frecuenciaSeleccionada = document.getElementById('frecuencia').value;
+            let frecuenciaFinal = frecuenciaSeleccionada;
+            if (frecuenciaSeleccionada === 'Otros') {
+                const detalleFreq = document.getElementById('detalleFrecuenciaOtro')?.value.trim();
+                if (detalleFreq) frecuenciaFinal = `Otros: ${detalleFreq}`;
+            }
+
+            const monedaSeleccionada = document.getElementById('monedaPagar').value;
+            let monedaFinal = monedaSeleccionada;
+            if (monedaSeleccionada === 'Otros') {
+                const detalleMoneda = document.getElementById('detalleMonedaOtro')?.value.trim();
+                if (detalleMoneda) monedaFinal = detalleMoneda;
+            }
+
+            const datosParaGuardar = {
+                Número: document.getElementById('numero').value,
+                Cliente: document.getElementById('cliente').value.trim(),
+                Aseguradora: document.getElementById('aseguradora').value,
+                Tipo: tipoSeleccionado,
+                DetalleTipo: detalleAdicional,
+                MontoPoliza: parseFloat(document.getElementById('montoPoliza').value) || 0,
+                MontoPagar: parseFloat(document.getElementById('montoPagar').value) || 0,
+                MonedaPagar: monedaFinal,
+                Frecuencia: frecuenciaFinal,
+                FechaVencimiento: document.getElementById('vencimiento').value,
+                Estado: document.getElementById('estado').value,
+                Beneficiario1: document.getElementById('beneficiario1').value,
+                Beneficiario2: document.getElementById('beneficiario2').value,
+                Beneficiario3: document.getElementById('beneficiario3').value,
+                Observaciones: document.getElementById('observaciones').value
+            };
+
+            try {
+                if (idEditando) {
+                    const { error } = await db.from('Polizas').update(datosParaGuardar).eq('id', idEditando);
+                    if (error) throw error;
+                    document.getElementById('idEditando').value = '';
+                } else {
+                    const { error } = await db.from('Polizas').insert([datosParaGuardar]);
+                    if (error) throw error;
+                }
+
+                document.getElementById('polizaForm').reset();
+                document.getElementById('contenedorDinamicoTipo').innerHTML = '';
+                document.getElementById('contenedorDinamicoFrecuencia').innerHTML = '';
+                document.getElementById('contenedorMonedaOtro').innerHTML = '';
+                cargarPolizas();
+                alert('¡Póliza guardada exitosamente!');
+            } catch (error) {
+                alert("Error al guardar: " + (error.message || error));
+            } finally {
+                btn.textContent = 'Guardar Registro';
+                btn.disabled = false;
+            }
+        };
+
+        window.cargarPolizas = async function() {
+            const contenedor = document.getElementById('contenedorGrupos');
+            contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">Cargando registros...</div>`;
+
+            try {
+                const { data: polizas, error } = await db.from('Polizas').select('*');
+                if (error) throw error;
+
+                todasLasPolizas = polizas || [];
+                actualizarFiltroTitulares();
+                renderizarTablas();
+            } catch (error) {
+                contenedor.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 40px;">Error al conectar con la base de datos.</div>`;
+            }
+        };
+
+        function actualizarFiltroTitulares() {
+            const selectFiltro = document.getElementById('filtroTitular');
+            const valorActual = selectFiltro.value;
+            const titularesSet = new Set();
+            todasLasPolizas.forEach(p => { if (p.Cliente) titularesSet.add(p.Cliente.trim()); });
+
+            let listaTitulares = Array.from(titularesSet);
+            let opcionesHTML = `<option value="TODOS">-- Todos los Titulares --</option>`;
+            listaTitulares.forEach(t => { opcionesHTML += `<option value="${t}">${t}</option>`; });
+            selectFiltro.innerHTML = opcionesHTML;
+            if (valorActual) selectFiltro.value = valorActual;
+        }
+
+        window.renderizarTablas = function() {
+            const contenedor = document.getElementById('contenedorGrupos');
+            const filtroSeleccionado = document.getElementById('filtroTitular').value;
+
+            if (todasLasPolizas.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">No hay registros activos.</div>`;
+                return;
+            }
+
+            const grupos = {};
+            todasLasPolizas.forEach(p => {
+                const cliente = (p.Cliente || 'SIN CLIENTE').trim();
+                if (!grupos[cliente]) grupos[cliente] = [];
+                grupos[cliente].push(p);
+            });
+
+            contenedor.innerHTML = '';
+            const hoy = new Date().toISOString().split('T')[0];
+
+            Object.keys(grupos).forEach(titular => {
+                if (filtroSeleccionado !== 'TODOS' && titular !== filtroSeleccionado) return;
+
+                const polizasGrupo = grupos[titular];
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card card-grupo';
+                cardDiv.style.marginBottom = '25px';
+
+                let filasHTML = '';
+                polizasGrupo.forEach(p => {
+                    let fechaVen = p.FechaVencimiento || '';
+                    let estadoHTML = fechaVen < hoy ? '<span class="badge badge-vencida">Vencida</span>' : '<span class="badge badge-vigente">Vigente</span>';
+
+                    filasHTML += `
+                        <tr>
+                            <td>
+                                <strong style="color: var(--primary);">N°: ${p.Número || 'S/N'}</strong><br>
+                                <small style="color: var(--text-light);">Aseguradora: ${p.Aseguradora || 'N/A'}</small><br>
+                                <strong style="color: var(--accent);">${p.Cliente}</strong>
+                            </td>
+                            <td>${p.Tipo}</td>
+                            <td>
+                                <strong>${p.MonedaPagar || '¢'} ${(p.MontoPagar || 0).toLocaleString()}</strong><br>
+                                <span class="badge" style="background: #e2e8f0; color: #1e293b;">${p.Frecuencia}</span>
+                            </td>
+                            <td><strong>${fechaVen}</strong><br>${estadoHTML}</td>
+                            <td>
+                                <button class="btn btn-outline-primary" onclick="editarPoliza('${p.id}')">Editar</button>
+                                <button class="btn btn-outline-danger" onclick="eliminarPoliza('${p.id}')">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                cardDiv.innerHTML = `
+                    <div class="card-header" style="background: var(--primary); color: white; display: flex; justify-content: space-between;">
+                        <span>Titular: ${titular}</span>
+                        <span>${polizasGrupo.length} póliza(s)</span>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Identificador</th>
+                                        <th>Tipo</th>
+                                        <th>Pago / Prima</th>
+                                        <th>Vencimiento</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${filasHTML}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                contenedor.appendChild(cardDiv);
+            });
+        };
+
+        window.editarPoliza = function(id) {
+            db.from('Polizas').select('*').eq('id', id).single().then(({ data: p }) => {
+                if (!p) return;
+                document.getElementById('idEditando').value = p.id;
+                document.getElementById('numero').value = p.Número || '';
+                document.getElementById('cliente').value = p.Cliente || '';
+                document.getElementById('aseguradora').value = p.Aseguradora || '';
+                document.getElementById('tipo').value = p.Tipo || 'Vida';
+                manejarTipoPoliza();
+                document.getElementById('montoPoliza').value = p.MontoPoliza || '';
+                document.getElementById('montoPagar').value = p.MontoPagar || '';
+                document.getElementById('vencimiento').value = p.FechaVencimiento || '';
+                document.getElementById('btnGuardar').textContent = 'Actualizar Registro';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        };
+
+        window.eliminarPoliza = async function(id) {
+            if (confirm('¿Desea eliminar este registro?')) {
+                await db.from('Polizas').delete().eq('id', id);
+                cargarPolizas();
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            manejarTipoPoliza();
+            cargarPolizas();
+            document.getElementById('polizaForm').addEventListener('submit', window.guardarPoliza);
+        });
+    </script>
+
+    <style>
+        :root {
+            --primary: #0a2540;
+            --primary-light: #13385f;
+            --accent: #00bcd4;
+            --accent-hover: #0097a7;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #dcdde1;
+            --danger: #e74c3c;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        .header-main { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; padding: 35px 20px; text-align: center; border-bottom: 4px solid var(--accent); }
+        .header-main h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 2.3rem; }
+        .container { max-width: 1300px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .dashboard-grid { display: grid; grid-template-columns: 360px 1fr; gap: 25px; }
+        @media (max-width: 992px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        .card-header { background: var(--primary); color: white; padding: 15px 20px; font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+        .card-body { padding: 20px; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; }
+        .form-control, .form-select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+        .btn { padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; width: 100%; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-outline-primary { background: transparent; color: var(--primary); border: 1px solid var(--border); }
+        .btn-outline-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        th { background: #f8f9fa; color: var(--primary); font-family: 'Playfair Display', serif; padding: 10px; border-bottom: 2px solid var(--border); }
+        td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+        .badge-vigente { background: #d4edda; color: #155724; }
+        .badge-vencida { background: #f8d7da; color: #721c24; }
+        footer { background: var(--primary); color: white; text-align: center; padding: 20px; border-top: 3px solid var(--accent); font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <header class="header-main">
+        <h1>Walbin Sánchez Enterprise</h1>
+        <p>Registro de Pólizas (Panel de Administración)</p>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">Gestión de Póliza</div>
+                <div class="card-body">
+                    <form id="polizaForm">
+                        <input type="hidden" id="idEditando">
+                        <div class="form-group"><label class="form-label">Número de Póliza</label><input type="text" class="form-control" id="numero" required></div>
+                        <div class="form-group"><label class="form-label">Titular / Cliente</label><input type="text" class="form-control" id="cliente" required></div>
+                        <div class="form-group"><label class="form-label">Aseguradora</label><input type="text" class="form-control" id="aseguradora"></div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Póliza</label>
+                            <select class="form-select" id="tipo" onchange="manejarTipoPoliza()">
+                                <option value="Vida">Vida</option>
+                                <option value="Vehiculo">Vehiculo</option>
+                                <option value="Vivienda">Vivienda</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div id="contenedorDinamicoTipo"></div>
+                        <div class="form-group"><label class="form-label">Valor Total de Póliza</label><input type="number" step="0.01" class="form-control" id="montoPoliza"></div>
+                        <div class="form-group">
+                            <label class="form-label">Monto a Pagar (Prima)</label>
+                            <div style="display: flex; gap: 6px;">
+                                <select class="form-select" id="monedaPagar" onchange="manejarMonedaPagar()" style="width: 90px;"><option value="¢">₡</option><option value="$">$</option><option value="Otros">Otro</option></select>
+                                <input type="number" step="0.01" class="form-control" id="montoPagar" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div id="contenedorMonedaOtro"></div>
+                        <div class="form-group">
+                            <label class="form-label">Frecuencia de Pago</label>
+                            <select class="form-select" id="frecuencia" onchange="manejarFrecuenciaPago()">
+                                <option value="Mensual">Mensual</option><option value="Trimestral">Trimestral</option><option value="Semestral">Semestral</option><option value="Anual">Anual</option><option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div id="contenedorDinamicoFrecuencia"></div>
+                        <div class="form-group"><label class="form-label">Fecha de Vencimiento</label><input type="date" class="form-control" id="vencimiento" required></div>
+                        <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="estado"><option value="Activa">Activa</option><option value="Pendiente">Pendiente</option></select></div>
+                        <div class="form-group"><label class="form-label">Beneficiarios</label><input type="text" class="form-control" id="beneficiario1" placeholder="Beneficiario 1"><input type="text" class="form-control" id="beneficiario2" placeholder="Beneficiario 2" style="margin-top:4px;"><input type="text" class="form-control" id="beneficiario3" placeholder="Beneficiario 3" style="margin-top:4px;"></div>
+                        <div class="form-group"><label class="form-label">Observaciones</label><textarea class="form-control" id="observaciones"></textarea></div>
+                        <button type="submit" id="btnGuardar" class="btn btn-primary">Guardar Registro</button>
+                    </form>
+                </div>
+            </div>
+
+            <div>
+                <div class="filter-bar" style="background:#fff; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+                    <label style="font-weight:600; font-family:'Playfair Display', serif;">Filtrar Titular:</label>
+                    <select id="filtroTitular" class="form-select" onchange="renderizarTablas()" style="max-width:300px;"><option value="TODOS">-- Todos --</option></select>
+                </div>
+                <div id="contenedorGrupos"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer><p>&copy; 2026 Espinoza y Asociados. Todos los derechos reservados.</p></footer>
+</body>
+</html>
