@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Pólizas - Walbin Sánchez Enterprises</title>
+    <title>Consulta de Pólizas - Walbin Sánchez Enterprises</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        const SUPABASE_URL = 'https://mukyctfdyshtqrnqfsym.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_BAW52EP_WVQbrfUDlw7krw_Rfs60-UD';
+        const SUPABASE_URL = 'https://vxitxqefqemukrctbeom.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable__Dqgsy_BkJZwNr7zg1idCQ_3a8hLFix';
 
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let todasLasPolizas = [];
 
-        window.cargarPolizasPublicas = async function() {
-            const contenedor = document.getElementById('contenedorGruposPublicos');
+        window.cargarPolizas = async function() {
+            const contenedor = document.getElementById('contenedorGrupos');
             contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">Cargando registros...</div>`;
 
             try {
@@ -28,7 +28,7 @@
 
                 todasLasPolizas = polizas || [];
                 actualizarFiltroTitulares();
-                renderizarTablasPublicas();
+                renderizarTablas();
             } catch (error) {
                 contenedor.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 40px;">Error al conectar con la base de datos.</div>`;
             }
@@ -47,8 +47,8 @@
             if (valorActual) selectFiltro.value = valorActual;
         }
 
-        window.renderizarTablasPublicas = function() {
-            const contenedor = document.getElementById('contenedorGruposPublicos');
+        window.renderizarTablas = function() {
+            const contenedor = document.getElementById('contenedorGrupos');
             const filtroSeleccionado = document.getElementById('filtroTitular').value;
 
             if (todasLasPolizas.length === 0) {
@@ -71,26 +71,27 @@
 
                 const polizasGrupo = grupos[titular];
                 const cardDiv = document.createElement('div');
-                cardDiv.className = 'card';
+                cardDiv.className = 'card card-grupo';
                 cardDiv.style.marginBottom = '25px';
 
                 let filasHTML = '';
                 polizasGrupo.forEach(p => {
                     let fechaVen = p.FechaVencimiento || '';
                     let estadoHTML = fechaVen < hoy ? '<span class="badge badge-vencida">Vencida</span>' : '<span class="badge badge-vigente">Vigente</span>';
-                    let bens = [p.Beneficiario1, p.Beneficiario2, p.Beneficiario3].filter(Boolean).join('<br>');
 
                     filasHTML += `
                         <tr>
                             <td>
                                 <strong style="color: var(--primary);">N°: ${p.Número || 'S/N'}</strong><br>
-                                <small style="color: var(--text-light);">Aseguradora: ${p.Aseguradora || 'N/A'}</small>
+                                <small style="color: var(--text-light);">Aseguradora: ${p.Aseguradora || 'N/A'}</small><br>
+                                <strong style="color: var(--accent);">${p.Cliente}</strong>
                             </td>
                             <td>${p.Tipo}</td>
-                            <td><strong>${p.MonedaPagar || '¢'} ${(p.MontoPagar || 0).toLocaleString()}</strong></td>
-                            <td>${bens || 'Sin beneficiarios'}</td>
+                            <td>
+                                <strong>${p.MonedaPagar || '¢'} ${(p.MontoPagar || 0).toLocaleString()}</strong><br>
+                                <span class="badge" style="background: #e2e8f0; color: #1e293b;">${p.Frecuencia}</span>
+                            </td>
                             <td><strong>${fechaVen}</strong><br>${estadoHTML}</td>
-                            <td>${p.Observaciones || 'Sin observaciones'}</td>
                         </tr>
                     `;
                 });
@@ -107,10 +108,8 @@
                                     <tr>
                                         <th>Identificador</th>
                                         <th>Tipo</th>
-                                        <th>Pago</th>
-                                        <th>Beneficiarios</th>
+                                        <th>Pago / Prima</th>
                                         <th>Vencimiento</th>
-                                        <th>Observaciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>${filasHTML}</tbody>
@@ -122,7 +121,9 @@
             });
         };
 
-        window.addEventListener('DOMContentLoaded', () => { cargarPolizasPublicas(); });
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarPolizas();
+        });
     </script>
 
     <style>
@@ -130,6 +131,7 @@
             --primary: #0a2540;
             --primary-light: #13385f;
             --accent: #00bcd4;
+            --accent-hover: #0097a7;
             --bg: #f4f7f6;
             --card-bg: #ffffff;
             --text: #2c3e50;
@@ -140,32 +142,32 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         .header-main { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; padding: 35px 20px; text-align: center; border-bottom: 4px solid var(--accent); }
         .header-main h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 2.3rem; }
-        .container { max-width: 1200px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .container { max-width: 1100px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
         .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .card-header { background: var(--primary); color: white; padding: 15px 20px; font-family: 'Playfair Display', serif; font-size: 1.1rem; }
-        .table-responsive { overflow-x: auto; }
+        .card-body { padding: 20px; }
+        .form-select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
         th { background: #f8f9fa; color: var(--primary); font-family: 'Playfair Display', serif; padding: 10px; border-bottom: 2px solid var(--border); }
         td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
         .badge-vigente { background: #d4edda; color: #155724; }
         .badge-vencida { background: #f8d7da; color: #721c24; }
-        .filter-bar { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
         footer { background: var(--primary); color: white; text-align: center; padding: 20px; border-top: 3px solid var(--accent); font-size: 0.85rem; }
     </style>
 </head>
 <body>
     <header class="header-main">
-        <h1>Walbin Sánchez Enterprises</h1>
-        <p>Registro de Pólizas (Consulta en Línea)</p>
+        <h1>Walbin Sanches Enterprises</h1>
+        <p>Consulta en Línea de Pólizas</p>
     </header>
 
     <div class="container">
-        <div class="filter-bar">
-            <label style="font-weight:600; font-family:'Playfair Display', serif;">Seleccionar Titular:</label>
-            <select id="filtroTitular" class="form-select" onchange="renderizarTablasPublicas()" style="max-width:300px;"><option value="TODOS">-- Todos los Titulares --</option></select>
+        <div class="filter-bar" style="background:#fff; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+            <label style="font-weight:600; font-family:'Playfair Display', serif;">Filtrar Titular:</label>
+            <select id="filtroTitular" class="form-select" onchange="renderizarTablas()" style="max-width:300px;"><option value="TODOS">-- Todos --</option></select>
         </div>
-        <div id="contenedorGruposPublicos"></div>
+        <div id="contenedorGrupos"></div>
     </div>
 
     <footer><p>&copy; 2026 Espinoza y Asociados. Todos los derechos reservados.</p></footer>
