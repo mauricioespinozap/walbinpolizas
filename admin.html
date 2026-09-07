@@ -114,18 +114,29 @@
                 Cliente: document.getElementById('cliente').value.trim(),
                 Aseguradora: document.getElementById('aseguradora').value,
                 Tipo: tipoSeleccionado,
-                DetalleTipo: detalleAdicional,
                 MontoPoliza: parseFloat(document.getElementById('montoPoliza').value) || 0,
                 MontoPagar: parseFloat(document.getElementById('montoPagar').value) || 0,
                 MonedaPagar: monedaFinal,
                 Frecuencia: frecuenciaFinal,
                 FechaVencimiento: document.getElementById('vencimiento').value,
                 Estado: document.getElementById('estado').value,
-                Beneficiario1: document.getElementById('beneficiario1').value,
-                Beneficiario2: document.getElementById('beneficiario2').value,
-                Beneficiario3: document.getElementById('beneficiario3').value,
-                Observaciones: document.getElementById('observaciones').value
+                Beneficiario1: document.getElementById('beneficiario1').value.trim(),
+                Beneficiario2: document.getElementById('beneficiario2').value.trim(),
+                Beneficiario3: document.getElementById('beneficiario3').value.trim()
             };
+
+            const valorPolizaVal = document.getElementById('valorPoliza').value.trim();
+            const observacionesVal = document.getElementById('observaciones').value.trim();
+            const emisionVal = document.getElementById('emision').value;
+
+            if (valorPolizaVal) datosParaGuardar.ValorPoliza = valorPolizaVal;
+            if (detalleAdicional) datosParaGuardar.DetalleTipo = detalleAdicional;
+            
+            let obsFinal = observacionesVal;
+            if (emisionVal) {
+                obsFinal = `[Emisión: ${emisionVal}] ` + obsFinal;
+            }
+            if (obsFinal) datosParaGuardar.Observaciones = obsFinal;
 
             try {
                 if (idEditando) {
@@ -210,7 +221,49 @@
                 let filasHTML = '';
                 polizasGrupo.forEach(p => {
                     let fechaVen = p.FechaVencimiento || '';
-                    let estadoHTML = fechaVen < hoy ? '<span class="badge badge-vencida">Vencida</span>' : '<span class="badge badge-vigente">Vigente</span>';
+                    let estadoBD = (p.Estado || '').toLowerCase();
+                    
+                    let badgeClass = 'badge-vigente';
+                    let estadoTexto = p.Estado || 'Activa';
+
+                    if (fechaVen && fechaVen < hoy && estadoBD !== 'pendiente' && estadoBD !== 'en tramite' && estadoBD !== 'inactiva') {
+                        estadoTexto = 'Inactiva (Vencida)';
+                        badgeClass = 'badge-vencida';
+                    } else if (estadoBD.includes('pendiente')) {
+                        estadoTexto = 'Pendiente';
+                        badgeClass = 'badge-pendiente';
+                    } else if (estadoBD.includes('tramite')) {
+                        estadoTexto = 'En trámite';
+                        badgeClass = 'badge-tramite';
+                    } else if (estadoBD.includes('inactiva') || estadoBD.includes('vencida')) {
+                        estadoTexto = 'Inactiva (Vencida)';
+                        badgeClass = 'badge-vencida';
+                    } else {
+                        estadoTexto = 'Activa';
+                        badgeClass = 'badge-vigente';
+                    }
+
+                    let estadoHTML = `<span class="badge ${badgeClass}">${estadoTexto}</span>`;
+
+                    let detalleTipoHTML = '';
+                    if (p.DetalleTipo) {
+                        let etiquetaDetalle = 'Detalle';
+                        if (p.Tipo === 'Vehiculo') etiquetaDetalle = 'Placa';
+                        else if (p.Tipo === 'Vivienda') etiquetaDetalle = 'Finca';
+                        detalleTipoHTML = `<br><small style="color: var(--text-light);">${etiquetaDetalle}: ${p.DetalleTipo}</small>`;
+                    }
+
+                    let fechaEmiMostrar = 'N/D';
+                    let obsLimpia = p.Observaciones || '';
+                    if (obsLimpia.startsWith('[Emisión:')) {
+                        let finCorchete = obsLimpia.indexOf(']');
+                        fechaEmiMostrar = obsLimpia.substring(9, finCorchete).trim();
+                        obsLimpia = obsLimpia.substring(finCorchete + 1).trim();
+                    }
+
+                    let listaBens = [p.Beneficiario1, p.Beneficiario2, p.Beneficiario3].filter(Boolean);
+                    let beneficiarioTexto = listaBens.length > 0 ? listaBens.join(', ') : 'No especificado';
+                    let valorPagaTexto = p.ValorPoliza || (p.MontoPoliza ? `${p.MonedaPagar || '¢'} ${p.MontoPoliza.toLocaleString()}` : 'No especificado');
 
                     filasHTML += `
                         <tr>
@@ -219,13 +272,24 @@
                                 <small style="color: var(--text-light);">Aseguradora: ${p.Aseguradora || 'N/A'}</small><br>
                                 <strong style="color: var(--accent);">${p.Cliente}</strong>
                             </td>
-                            <td>${p.Tipo}</td>
+                            <td>
+                                <strong>${p.Tipo}</strong>${detalleTipoHTML}
+                            </td>
                             <td>
                                 <strong>${p.MonedaPagar || '¢'} ${(p.MontoPagar || 0).toLocaleString()}</strong><br>
                                 <span class="badge" style="background: #e2e8f0; color: #1e293b;">${p.Frecuencia}</span>
                             </td>
-                            <td><strong>${fechaVen}</strong><br>${estadoHTML}</td>
                             <td>
+                                <small style="color: var(--text-light);">Emisión: ${fechaEmiMostrar}</small><br>
+                                <strong>Venc: ${fechaVen}</strong><br>
+                                (${estadoHTML})
+                            </td>
+                            <td>
+                                <div style="font-size: 0.8rem; margin-bottom: 4px;"><strong>Cobertura/Pago:</strong> ${valorPagaTexto}</div>
+                                <div style="font-size: 0.8rem; margin-bottom: 4px;"><strong>Beneficiario(s):</strong> ${beneficiarioTexto}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-light);"><strong>Obs:</strong> ${obsLimpia || 'Ninguna'}</div>
+                            </td>
+                            <td class="no-print">
                                 <button class="btn btn-outline-primary" onclick="editarPoliza('${p.id}')">Editar</button>
                                 <button class="btn btn-outline-danger" onclick="eliminarPoliza('${p.id}')">Eliminar</button>
                             </td>
@@ -246,8 +310,9 @@
                                         <th>Identificador</th>
                                         <th>Tipo</th>
                                         <th>Pago / Prima</th>
-                                        <th>Vencimiento</th>
-                                        <th>Acciones</th>
+                                        <th>Fechas / Estado</th>
+                                        <th>Detalles (Paga / Benef. / Obs)</th>
+                                        <th class="no-print">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>${filasHTML}</tbody>
@@ -259,6 +324,21 @@
             });
         };
 
+        window.imprimirTodo = function() {
+            document.getElementById('filtroTitular').value = 'TODOS';
+            renderizarTablas();
+            window.print();
+        };
+
+        window.imprimirTitularActual = function() {
+            const titular = document.getElementById('filtroTitular').value;
+            if (titular === 'TODOS') {
+                alert('Por favor, seleccione un titular específico en el menú desplegable para imprimir solo su información.');
+                return;
+            }
+            window.print();
+        };
+
         window.editarPoliza = function(id) {
             db.from('Polizas').select('*').eq('id', id).single().then(({ data: p }) => {
                 if (!p) return;
@@ -268,9 +348,36 @@
                 document.getElementById('aseguradora').value = p.Aseguradora || '';
                 document.getElementById('tipo').value = p.Tipo || 'Vida';
                 manejarTipoPoliza();
+                
+                setTimeout(() => {
+                    if (p.Tipo === 'Vehiculo' && document.getElementById('detallePlaca')) {
+                        document.getElementById('detallePlaca').value = p.DetalleTipo || '';
+                    } else if (p.Tipo === 'Vivienda' && document.getElementById('detalleFinca')) {
+                        document.getElementById('detalleFinca').value = p.DetalleTipo || '';
+                    } else if (p.Tipo === 'Otros' && document.getElementById('detalleOtro')) {
+                        document.getElementById('detalleOtro').value = p.DetalleTipo || '';
+                    }
+                }, 50);
+
                 document.getElementById('montoPoliza').value = p.MontoPoliza || '';
+                document.getElementById('valorPoliza').value = p.ValorPoliza || '';
                 document.getElementById('montoPagar').value = p.MontoPagar || '';
                 document.getElementById('vencimiento').value = p.FechaVencimiento || '';
+                document.getElementById('estado').value = p.Estado || 'Activa';
+                document.getElementById('beneficiario1').value = p.Beneficiario1 || '';
+                document.getElementById('beneficiario2').value = p.Beneficiario2 || '';
+                document.getElementById('beneficiario3').value = p.Beneficiario3 || '';
+                
+                let obsRaw = p.Observaciones || '';
+                if (obsRaw.startsWith('[Emisión:')) {
+                    let fin = obsRaw.indexOf(']');
+                    document.getElementById('emision').value = obsRaw.substring(9, fin).trim();
+                    document.getElementById('observaciones').value = obsRaw.substring(fin + 1).trim();
+                } else {
+                    document.getElementById('emision').value = '';
+                    document.getElementById('observaciones').value = obsRaw;
+                }
+
                 document.getElementById('btnGuardar').textContent = 'Actualizar Registro';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
@@ -304,9 +411,10 @@
             --danger: #e74c3c;
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        .header-main { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; padding: 35px 20px; text-align: center; border-bottom: 4px solid var(--accent); }
-        .header-main h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 2.3rem; }
-        .container { max-width: 1300px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .header-main { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; padding: 25px 20px; text-align: center; border-bottom: 4px solid var(--accent); display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .header-content h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 2.3rem; }
+        .header-logo { height: 55px; width: auto; object-fit: contain; }
+        .container { max-width: 1400px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
         .dashboard-grid { display: grid; grid-template-columns: 360px 1fr; gap: 25px; }
         @media (max-width: 992px) { .dashboard-grid { grid-template-columns: 1fr; } }
         .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
@@ -318,21 +426,37 @@
         .btn { padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; width: 100%; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-primary:hover { background: var(--accent-hover); }
-        .btn-outline-primary { background: transparent; color: var(--primary); border: 1px solid var(--border); }
+        .btn-outline-primary { background: transparent; color: var(--primary); border: 1px solid var(--border); margin-bottom: 4px; }
         .btn-outline-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-print { background: var(--primary); color: white; width: auto; padding: 8px 12px; font-size: 0.85rem; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-print:hover { background: var(--primary-light); }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
         th { background: #f8f9fa; color: var(--primary); font-family: 'Playfair Display', serif; padding: 10px; border-bottom: 2px solid var(--border); }
         td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
         .badge-vigente { background: #d4edda; color: #155724; }
         .badge-vencida { background: #f8d7da; color: #721c24; }
+        .badge-pendiente { background: #fff3cd; color: #856404; }
+        .badge-tramite { background: #cce5ff; color: #004085; }
         footer { background: var(--primary); color: white; text-align: center; padding: 20px; border-top: 3px solid var(--accent); font-size: 0.85rem; }
+        
+        @media print {
+            body { background: white !important; }
+            .dashboard-grid > div:first-child, .filter-bar .no-print, footer, header { display: none !important; }
+            .dashboard-grid { display: block !important; }
+            .card { border: none !important; box-shadow: none !important; }
+            .card-header { background: #0a2540 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
     <header class="header-main">
-        <h1>Walbin Sánchez Enterprises</h1>
-        <p>Registro de Pólizas (Panel de Administración)</p>
+        <div class="header-content">
+            <h1>Walbin Sánchez Enterprises</h1>
+            <p style="margin: 5px 0 0 0;">Registro de Pólizas (Panel de Administración)</p>
+        </div>
+        <img src="golo.jpg" alt="Logo WSS" class="header-logo">
     </header>
 
     <div class="container">
@@ -355,7 +479,8 @@
                             </select>
                         </div>
                         <div id="contenedorDinamicoTipo"></div>
-                        <div class="form-group"><label class="form-label">Valor Total de Póliza</label><input type="number" step="0.01" class="form-control" id="montoPoliza"></div>
+                        <div class="form-group"><label class="form-label">Monto de la Póliza (Lo que paga)</label><input type="text" class="form-control" id="valorPoliza" placeholder="Ej. $100,000 o Cobertura total"></div>
+                        <div class="form-group"><label class="form-label">Valor Numérico (Opcional)</label><input type="number" step="0.01" class="form-control" id="montoPoliza" placeholder="Solo para cálculos internos"></div>
                         <div class="form-group">
                             <label class="form-label">Monto a Pagar (Prima)</label>
                             <div style="display: flex; gap: 6px;">
@@ -371,19 +496,38 @@
                             </select>
                         </div>
                         <div id="contenedorDinamicoFrecuencia"></div>
+                        <div class="form-group"><label class="form-label">Fecha de Emisión</label><input type="date" class="form-control" id="emision"></div>
                         <div class="form-group"><label class="form-label">Fecha de Vencimiento</label><input type="date" class="form-control" id="vencimiento" required></div>
-                        <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="estado"><option value="Activa">Activa</option><option value="Pendiente">Pendiente</option></select></div>
-                        <div class="form-group"><label class="form-label">Beneficiarios</label><input type="text" class="form-control" id="beneficiario1" placeholder="Beneficiario 1"><input type="text" class="form-control" id="beneficiario2" placeholder="Beneficiario 2" style="margin-top:4px;"><input type="text" class="form-control" id="beneficiario3" placeholder="Beneficiario 3" style="margin-top:4px;"></div>
-                        <div class="form-group"><label class="form-label">Observaciones</label><textarea class="form-control" id="observaciones"></textarea></div>
+                        <div class="form-group">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" id="estado">
+                                <option value="Activa">Activa</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En trámite">En trámite</option>
+                                <option value="Inactiva">Inactiva (Vencida)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Beneficiarios</label>
+                            <input type="text" class="form-control" id="beneficiario1" placeholder="Beneficiario 1">
+                            <input type="text" class="form-control" id="beneficiario2" placeholder="Beneficiario 2" style="margin-top:4px;">
+                            <input type="text" class="form-control" id="beneficiario3" placeholder="Beneficiario 3" style="margin-top:4px;">
+                        </div>
+                        <div class="form-group"><label class="form-label">Observaciones</label><textarea class="form-control" id="observaciones" rows="3"></textarea></div>
                         <button type="submit" id="btnGuardar" class="btn btn-primary">Guardar Registro</button>
                     </form>
                 </div>
             </div>
 
             <div>
-                <div class="filter-bar" style="background:#fff; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+                <div class="filter-bar" style="background:#fff; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
                     <label style="font-weight:600; font-family:'Playfair Display', serif;">Filtrar Titular:</label>
-                    <select id="filtroTitular" class="form-select" onchange="renderizarTablas()" style="max-width:300px;"><option value="TODOS">-- Todos --</option></select>
+                    <select id="filtroTitular" class="form-select" onchange="renderizarTablas()" style="max-width:250px;"><option value="TODOS">-- Todos --</option></select>
+                    
+                    <div style="display: flex; gap: 8px; margin-left: auto;" class="no-print">
+                        <button type="button" class="btn btn-print" onclick="imprimirTitularActual()">🖨️ Imprimir Titular</button>
+                        <button type="button" class="btn btn-print" onclick="imprimirTodo()">🖨️ Imprimir Todo</button>
+                    </div>
                 </div>
                 <div id="contenedorGrupos"></div>
             </div>
