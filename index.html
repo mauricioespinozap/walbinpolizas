@@ -16,7 +16,6 @@
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Datos unificados y sin duplicados extraídos de los PDF anteriores y nuevos
         let todasLasPolizas = [
             {
                 id: 'pdf-1',
@@ -154,16 +153,21 @@
         ];
 
         window.cargarPolizasPublicas = async function() {
+            let polizasSupabase = [];
             try {
-                const { data: polizas, error } = await db.from('Polizas').select('*');
-                if (!error && polizas && polizas.length > 0) {
-                    const idsSupabase = new Set(polizas.map(p => p.id));
-                    const filtradasPrecargadas = todasLasPolizas.filter(p => !idsSupabase.has(p.Número));
-                    todasLasPolizas = [...polizas, ...filtradasPrecargadas];
+                const { data, error } = await db.from('Polizas').select('*');
+                if (!error && data) {
+                    polizasSupabase = data;
                 }
             } catch (error) {
-                console.log("Usando datos locales precargados.");
+                console.log("Error al conectar con Supabase, usando respaldo local.");
             }
+
+            const numerosSupabase = new Set(polizasSupabase.map(p => p.Número));
+            const precargadasUnicas = todasLasPolizas.filter(p => !numerosSupabase.has(p.Número));
+            
+            todasLasPolizas = [...polizasSupabase, ...precargadasUnicas];
+
             actualizarFiltroTitulares();
             renderizarTablasPublicas();
         };
