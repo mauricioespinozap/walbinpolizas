@@ -3,35 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Pólizas - Walbin Sánchez Enterprises</title>
+    <title>Control de Pólizas - Espinoza y Asociados</title>
     <link rel="icon" type="image/png" href="logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        const SUPABASE_URL = 'https://vxitxqefqemukrctbeom.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable__Dqgsy_BkJZwNr7zg1idCQ_3a8hLFix';
+        const SUPABASE_URL = 'https://mukyctfdyshtqrnqfsym.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_BAW52EP_WVQbrfUDlw7krw_Rfs60-UD';
 
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let todasLasPolizas = [];
+        // Datos unificados y sin duplicados extraídos de los PDF anteriores y nuevos
+        let todasLasPolizas = [
+            {
+                id: 'pdf-1',
+                Número: 'BDPC-186748',
+                Cliente: 'ARELYS ESPINOZA MONTENEGRO',
+                Aseguradora: 'Internacional de Seguros',
+                Tipo: 'Otros',
+                DetalleTipo: 'COLECTIVO DE SALDO DEUDOR TC P',
+                MontoPoliza: 0,
+                MontoPagar: 4700.00,
+                MonedaPagar: '¢',
+                Frecuencia: 'Mensual',
+                FechaInscripcion: '2026-04-04',
+                FechaVencimiento: '2026-08-04',
+                Estado: 'Activa',
+                Beneficiario1: '',
+                Beneficiario2: '',
+                Beneficiario3: '',
+                Observaciones: 'Cuota 05 de 12 - BAC Credomatic'
+            },
+            {
+                id: 'pdf-2',
+                Número: 'AFAC-4713',
+                Cliente: 'ARELYS ESPINOZA MONTENEGRO',
+                Aseguradora: 'Internacional de Seguros',
+                Tipo: 'Otros',
+                DetalleTipo: 'SEGURO AUTOEXPEDIBLE FLEXI ASIS',
+                MontoPoliza: 0,
+                MontoPagar: 4500.00,
+                MonedaPagar: '¢',
+                Frecuencia: 'Mensual',
+                FechaInscripcion: '2026-03-10',
+                FechaVencimiento: '2026-07-10',
+                Estado: 'Activa',
+                Beneficiario1: '',
+                Beneficiario2: '',
+                Beneficiario3: '',
+                Observaciones: 'Cuota 05 de 12 - BCR'
+            },
+            {
+                id: 'pdf-3',
+                Número: 'VSTD-3145276617',
+                Cliente: 'ARELYS ESPINOZA MONTENEGRO',
+                Aseguradora: 'Internacional de Seguros',
+                Tipo: 'Otros',
+                DetalleTipo: 'COLECTIVO DE SALDO DEUDOR TC P',
+                MontoPoliza: 0,
+                MontoPagar: 3.69,
+                MonedaPagar: '$',
+                Frecuencia: 'Mensual',
+                FechaInscripcion: '2025-08-29',
+                FechaVencimiento: '2026-07-31',
+                Estado: 'Activa',
+                Beneficiario1: '',
+                Beneficiario2: '',
+                Beneficiario3: '',
+                Observaciones: 'Cuota 12 de 12 - BAC Credomatic'
+            },
+            {
+                id: 'pdf-4',
+                Número: 'CRC0310002388249',
+                Cliente: 'ESPINOZA MONTENEGRO ARELYS',
+                Aseguradora: 'Aseguradora Sagicor Costa Rica',
+                Tipo: 'Vida',
+                DetalleTipo: '',
+                MontoPoliza: 0,
+                MontoPagar: 4080.00,
+                MonedaPagar: '¢',
+                Frecuencia: 'Mensual',
+                FechaInscripcion: '',
+                FechaVencimiento: '2026-07-07',
+                Estado: 'Activa',
+                Beneficiario1: '',
+                Beneficiario2: '',
+                Beneficiario3: '',
+                Observaciones: 'Banco Promerica - Cuota Julio'
+            },
+            {
+                id: 'pdf-5',
+                Número: 'BSPC-63541',
+                Cliente: 'ARELYS ESPINOZA MONTENEGRO',
+                Aseguradora: 'Internacional de Seguros',
+                Tipo: 'Otros',
+                DetalleTipo: 'COLECTIVO DE SALDO DEUDOR TC P',
+                MontoPoliza: 0,
+                MontoPagar: 2950.00,
+                MonedaPagar: '¢',
+                Frecuencia: 'Mensual',
+                FechaInscripcion: '2025-11-03',
+                FechaVencimiento: '2026-07-03',
+                Estado: 'Activa',
+                Beneficiario1: '',
+                Beneficiario2: '',
+                Beneficiario3: '',
+                Observaciones: 'Cuota 09 de 12 - BAC Credomatic'
+            },
+            {
+                id: 'pdf-6',
+                Número: 'CRC0310002279463',
+                Cliente: 'ESPINOZA MONTENEGRO ARELYS',
+                Aseguradora: 'Aseguradora Sagicor Costa Rica',
+                Tipo: 'Vida',
+                DetalleTipo: '',
+                MontoPoliza: 0,
+                MontoPagar: 8058.00,
+                MonedaPagar: '¢',
+                Frecuencia: 'Mensual',
+                FechaInscripcion: '',
+                FechaVencimiento: '2026-08-28',
+                Estado: 'Activa',
+                Beneficiario1: '',
+                Beneficiario2: '',
+                Beneficiario3: '',
+                Observaciones: 'Banco Promerica - Cuota Agosto'
+            },
+            {
+                id: 'pdf-7',
+                Número: 'CRC0305S002383279',
+                Cliente: 'ESPINOZA MONTENEGRO ARELYS',
+                Aseguradora: 'Aseguradora Sagicor Costa Rica',
+                Tipo: 'Otros',
+                DetalleTipo: 'Accidentes Personales y Gastos Médicos',
+                MontoPoliza: 0,
+                MontoPagar: 7242.00,
+                MonedaPagar: '¢',
+                Frecuencia: 'Mensual',
+                FechaInscripcion: '',
+                FechaVencimiento: '2026-05-22',
+                Estado: 'Activa',
+                Beneficiario1: '',
+                Beneficiario2: '',
+                Beneficiario3: '',
+                Observaciones: 'Banco Promerica - Cuota Mayo'
+            }
+        ];
 
-        window.cargarPolizas = async function() {
-            const contenedor = document.getElementById('contenedorGrupos');
-            contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">Cargando registros...</div>`;
-
+        window.cargarPolizasPublicas = async function() {
             try {
                 const { data: polizas, error } = await db.from('Polizas').select('*');
-                if (error) throw error;
-
-                todasLasPolizas = polizas || [];
-                actualizarFiltroTitulares();
-                renderizarTablas();
+                if (!error && polizas && polizas.length > 0) {
+                    const idsSupabase = new Set(polizas.map(p => p.id));
+                    const filtradasPrecargadas = todasLasPolizas.filter(p => !idsSupabase.has(p.Número));
+                    todasLasPolizas = [...polizas, ...filtradasPrecargadas];
+                }
             } catch (error) {
-                contenedor.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 40px;">Error al conectar con la base de datos.</div>`;
+                console.log("Usando datos locales precargados.");
             }
+            actualizarFiltroTitulares();
+            renderizarTablasPublicas();
         };
 
         function actualizarFiltroTitulares() {
@@ -39,120 +173,108 @@
             const valorActual = selectFiltro.value;
             const titularesSet = new Set();
             todasLasPolizas.forEach(p => { if (p.Cliente) titularesSet.add(p.Cliente.trim()); });
-
             let listaTitulares = Array.from(titularesSet);
+
+            listaTitulares.sort((a, b) => {
+                if (a.toLowerCase().includes('mauricio espinoza')) return -1;
+                if (b.toLowerCase().includes('mauricio espinoza')) return 1;
+                return a.localeCompare(b);
+            });
+
             let opcionesHTML = `<option value="TODOS">-- Todos los Titulares --</option>`;
             listaTitulares.forEach(t => { opcionesHTML += `<option value="${t}">${t}</option>`; });
             selectFiltro.innerHTML = opcionesHTML;
-            if (valorActual) selectFiltro.value = valorActual;
+            selectFiltro.value = valorActual && Array.from(selectFiltro.options).some(opt => opt.value === valorActual) ? valorActual : 'TODOS';
         }
 
-        window.renderizarTablas = function() {
-            const contenedor = document.getElementById('contenedorGrupos');
+        window.renderizarTablasPublicas = function() {
+            const contenedor = document.getElementById('contenedorGruposPublicos');
             const filtroSeleccionado = document.getElementById('filtroTitular').value;
 
             if (todasLasPolizas.length === 0) {
-                contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">No hay registros activos.</div>`;
+                contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">No hay registros de pólizas activos.</div>`;
                 return;
             }
 
             const grupos = {};
             todasLasPolizas.forEach(p => {
-                const cliente = (p.Cliente || 'SIN CLIENTE').trim();
+                const cliente = (p.Cliente || 'MAURICIO ESPINOZA PEÑA').trim();
                 if (!grupos[cliente]) grupos[cliente] = [];
                 grupos[cliente].push(p);
             });
 
+            let nombresTitulares = Object.keys(grupos);
             contenedor.innerHTML = '';
             const hoy = new Date().toISOString().split('T')[0];
+            let hayResultadosFiltro = false;
 
-            Object.keys(grupos).forEach(titular => {
+            nombresTitulares.forEach(titular => {
                 if (filtroSeleccionado !== 'TODOS' && titular !== filtroSeleccionado) return;
-
+                hayResultadosFiltro = true;
                 const polizasGrupo = grupos[titular];
+                polizasGrupo.sort((a, b) => new Date(a.FechaVencimiento || '1970-01-01') - new Date(b.FechaVencimiento || '1970-01-01'));
+
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'card card-grupo';
                 cardDiv.style.marginBottom = '25px';
+                cardDiv.setAttribute('data-titular', titular);
 
                 let filasHTML = '';
                 polizasGrupo.forEach(p => {
-                    let fechaVen = p.FechaVencimiento || '';
-                    let estadoBD = (p.Estado || '').toLowerCase();
+                    let fechaIns = p.FechaInscripcion || 'N/A';
+                    let fechaVen = p.FechaVencimiento || 'N/A';
+                    let estadoHTML = '';
                     
-                    let badgeClass = 'badge-vigente';
-                    let estadoTexto = p.Estado || 'Activa';
-
-                    if (fechaVen && fechaVen < hoy && estadoBD !== 'pendiente' && estadoBD !== 'en tramite' && estadoBD !== 'inactiva') {
-                        estadoTexto = 'Inactiva (Vencida)';
-                        badgeClass = 'badge-vencida';
-                    } else if (estadoBD.includes('pendiente')) {
-                        estadoTexto = 'Pendiente';
-                        badgeClass = 'badge-pendiente';
-                    } else if (estadoBD.includes('tramite')) {
-                        estadoTexto = 'En trámite';
-                        badgeClass = 'badge-tramite';
-                    } else if (estadoBD.includes('inactiva') || estadoBD.includes('vencida')) {
-                        estadoTexto = 'Inactiva (Vencida)';
-                        badgeClass = 'badge-vencida';
+                    if (fechaVen < hoy && fechaVen !== 'N/A') {
+                        estadoHTML = '<span class="badge badge-vencida">Vencida</span>';
+                    } else if (fechaVen !== 'N/A') {
+                        const diffDays = Math.ceil((new Date(fechaVen) - new Date(hoy)) / (1000 * 60 * 60 * 24));
+                        estadoHTML = diffDays <= 30 ? '<span class="badge badge-por-vencer">Por vencer</span>' : '<span class="badge badge-vigente">Vigente</span>';
                     } else {
-                        estadoTexto = 'Activa';
-                        badgeClass = 'badge-vigente';
+                        estadoHTML = '<span class="badge badge-vigente">Activa</span>';
                     }
 
-                    let estadoHTML = `<span class="badge ${badgeClass}">${estadoTexto}</span>`;
+                    let bens = [p.Beneficiario1, p.Beneficiario2, p.Beneficiario3].filter(Boolean);
+                    let beneficiariosHTML = bens.length > 0 ? bens.join('<br>') : '<span style="color:var(--text-light);">Sin beneficiarios</span>';
+                    let monedaSimbolo = p.MonedaPagar || '¢';
+                    let montoPagarVal = (p.MontoPagar || 0).toLocaleString();
 
                     let detalleTipoHTML = '';
                     if (p.DetalleTipo) {
-                        let etiquetaDetalle = 'Detalle';
-                        if (p.Tipo === 'Vehiculo') etiquetaDetalle = 'Placa';
-                        else if (p.Tipo === 'Vivienda') etiquetaDetalle = 'Finca';
-                        detalleTipoHTML = `<br><small style="color: var(--text-light);">${etiquetaDetalle}: ${p.DetalleTipo}</small>`;
+                        detalleTipoHTML = `<br><small style="color: var(--accent);"><strong>${p.DetalleTipo}</strong></small>`;
                     }
-
-                    let fechaEmiMostrar = 'N/D';
-                    let obsLimpia = p.Observaciones || '';
-                    if (obsLimpia.startsWith('[Emisión:')) {
-                        let finCorchete = obsLimpia.indexOf(']');
-                        fechaEmiMostrar = obsLimpia.substring(9, finCorchete).trim();
-                        obsLimpia = obsLimpia.substring(finCorchete + 1).trim();
-                    }
-
-                    let listaBens = [p.Beneficiario1, p.Beneficiario2, p.Beneficiario3].filter(Boolean);
-                    let beneficiarioTexto = listaBens.length > 0 ? listaBens.join(', ') : 'No especificado';
-                    let valorPagaTexto = p.ValorPoliza || (p.MontoPoliza ? `${p.MonedaPagar || '¢'} ${p.MontoPoliza.toLocaleString()}` : 'No especificado');
 
                     filasHTML += `
                         <tr>
                             <td>
                                 <strong style="color: var(--primary);">N°: ${p.Número || 'S/N'}</strong><br>
-                                <small style="color: var(--text-light);">Aseguradora: ${p.Aseguradora || 'N/A'}</small><br>
-                                <strong style="color: var(--accent);">${p.Cliente}</strong>
+                                <small style="color: var(--text-light);">Aseguradora: <strong>${p.Aseguradora || 'N/A'}</strong></small><br>
+                                <strong style="color: var(--accent); font-size: 0.9rem;">${p.Cliente || ''}</strong>
                             </td>
                             <td>
-                                <strong>${p.Tipo}</strong>${detalleTipoHTML}
+                                <strong>${p.Tipo || ''}</strong>
+                                ${detalleTipoHTML}
                             </td>
                             <td>
-                                <strong>${p.MonedaPagar || '¢'} ${(p.MontoPagar || 0).toLocaleString()}</strong><br>
-                                <span class="badge" style="background: #e2e8f0; color: #1e293b;">${p.Frecuencia}</span>
+                                <small style="color:var(--text-light);">Valor Póliza: ¢${(p.MontoPoliza || 0).toLocaleString()}</small><br>
+                                <strong style="color: var(--accent); font-size: 0.95rem;">Pagar: ${monedaSimbolo} ${montoPagarVal}</strong><br>
+                                <span class="badge" style="background-color: #e2e8f0; color: #1e293b; margin-top:2px;">${p.Frecuencia || ''}</span>
                             </td>
+                            <td>${beneficiariosHTML}</td>
                             <td>
-                                <small style="color: var(--text-light);">Emisión: ${fechaEmiMostrar}</small><br>
-                                <strong>Venc: ${fechaVen}</strong><br>
-                                (${estadoHTML})
+                                <small style="color:var(--text-light);">Inscripción: <strong>${fechaIns}</strong></small><br>
+                                <small style="color:var(--text-light);">Vencimiento: <strong>${fechaVen}</strong></small><br>
+                                ${estadoHTML} <small style="color:var(--text-light);">(${p.Estado || ''})</small>
                             </td>
-                            <td>
-                                <div style="font-size: 0.8rem; margin-bottom: 4px;"><strong>Cobertura/Pago:</strong> ${valorPagaTexto}</div>
-                                <div style="font-size: 0.8rem; margin-bottom: 4px;"><strong>Beneficiario(s):</strong> ${beneficiarioTexto}</div>
-                                <div style="font-size: 0.8rem; color: var(--text-light);"><strong>Obs:</strong> ${obsLimpia || 'Ninguna'}</div>
-                            </td>
+                            <td><small style="color: var(--text);">${p.Observaciones || 'Sin observaciones'}</small></td>
                         </tr>
                     `;
                 });
 
                 cardDiv.innerHTML = `
-                    <div class="card-header" style="background: var(--primary); color: white; display: flex; justify-content: space-between;">
+                    <div class="card-header" style="background-color: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center;">
                         <span>Titular: ${titular}</span>
-                        <span>${polizasGrupo.length} póliza(s)</span>
+                        <span style="font-size: 0.85rem; background: var(--accent); padding: 2px 10px; border-radius: 12px; color: #fff;">${polizasGrupo.length} póliza(s)</span>
                     </div>
                     <div class="card-body" style="padding: 0;">
                         <div class="table-responsive">
@@ -161,9 +283,10 @@
                                     <tr>
                                         <th>Identificador</th>
                                         <th>Tipo</th>
-                                        <th>Pago / Prima</th>
-                                        <th>Fechas / Estado</th>
-                                        <th>Detalles (Paga / Benef. / Obs)</th>
+                                        <th>Valores y Pagos (Prima)</th>
+                                        <th>Beneficiarios</th>
+                                        <th>Inscripción y Vencimiento</th>
+                                        <th>Observaciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>${filasHTML}</tbody>
@@ -173,96 +296,99 @@
                 `;
                 contenedor.appendChild(cardDiv);
             });
+
+            if (!hayResultadosFiltro) {
+                contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">No hay pólizas registradas para el titular seleccionado.</div>`;
+            }
+        };
+
+        window.imprimirTitular = function() {
+            const filtro = document.getElementById('filtroTitular').value;
+            document.querySelectorAll('.card-grupo').forEach(card => {
+                card.style.display = (filtro === 'TODOS' || card.getAttribute('data-titular') === filtro) ? 'flex' : 'none';
+            });
+            window.print();
+            setTimeout(() => { document.querySelectorAll('.card-grupo').forEach(card => card.style.display = 'flex'); }, 500);
         };
 
         window.imprimirTodo = function() {
-            document.getElementById('filtroTitular').value = 'TODOS';
-            renderizarTablas();
+            document.querySelectorAll('.card-grupo').forEach(card => card.style.display = 'flex');
             window.print();
         };
 
-        window.imprimirTitularActual = function() {
-            const titular = document.getElementById('filtroTitular').value;
-            if (titular === 'TODOS') {
-                alert('Por favor, seleccione un titular específico en el menú desplegable para imprimir solo su información.');
-                return;
-            }
-            window.print();
-        };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            cargarPolizas();
-        });
+        window.addEventListener('DOMContentLoaded', () => { cargarPolizasPublicas(); });
     </script>
 
     <style>
         :root {
-            --primary: #0a2540;
-            --primary-light: #13385f;
-            --accent: #00bcd4;
-            --accent-hover: #0097a7;
-            --bg: #f4f7f6;
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #c5a059;
+            --accent-hover: #b08d47;
+            --bg: #f8fafc;
             --card-bg: #ffffff;
-            --text: #2c3e50;
-            --text-light: #7f8c8d;
-            --border: #dcdde1;
-            --danger: #e74c3c;
+            --text: #334155;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        .header-main { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; padding: 25px 20px; text-align: center; border-bottom: 4px solid var(--accent); display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
-        .header-content h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 2.3rem; }
-        .header-logo { height: 55px; width: auto; object-fit: contain; }
-        .container { max-width: 1300px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
-        .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
-        .card-header { background: var(--primary); color: white; padding: 15px 20px; font-family: 'Playfair Display', serif; font-size: 1.1rem; }
-        .card-body { padding: 20px; }
-        .form-select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
-        .btn-print { background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; padding: 8px 12px; font-size: 0.85rem; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; gap: 5px; }
-        .btn-print:hover { background: var(--primary-light); }
-        
-        /* Solución para tablas responsivas sin alterar el diseño */
-        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 650px; }
-        
-        th { background: #f8f9fa; color: var(--primary); font-family: 'Playfair Display', serif; padding: 10px; border-bottom: 2px solid var(--border); white-space: nowrap; }
-        td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
-        .badge-vigente { background: #d4edda; color: #155724; }
-        .badge-vencida { background: #f8d7da; color: #721c24; }
-        .badge-pendiente { background: #fff3cd; color: #856404; }
-        .badge-tramite { background: #cce5ff; color: #004085; }
-        footer { background: var(--primary); color: white; text-align: center; padding: 20px; border-top: 3px solid var(--accent); font-size: 0.85rem; }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
+        .header-main { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; padding: 40px 20px 25px 20px; text-align: center; border-bottom: 4px solid var(--accent); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .header-main h1 { font-family: 'Cinzel', serif; margin: 0; font-size: 2.5rem; color: #ffffff; line-height: 1.1; }
+        .header-main p { font-size: 1.05rem; color: #cbd5e1; max-width: 800px; margin: 0; font-weight: 300; }
+        .brand-logo-header { max-height: 90px; width: auto; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4)); margin-top: 8px; }
+        .container { max-width: 1200px; margin: 30px auto 40px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; display: flex; flex-direction: column; }
+        .card-header { background-color: var(--primary); color: white; padding: 18px 20px; font-family: 'Cinzel', serif; font-size: 1.15rem; border-bottom: 2px solid var(--accent); }
+        .card-body { padding: 0; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        th { background-color: #f1f5f9; color: var(--primary); font-family: 'Cinzel', serif; padding: 12px 10px; border-bottom: 2px solid var(--border); }
+        td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .badge-vigente { background-color: #d1fae5; color: #065f46; }
+        .badge-por-vencer { background-color: #fef3c7; color: #92400e; }
+        .badge-vencida { background-color: #fee2e2; color: #991b1b; }
+        .filter-bar { background: var(--card-bg); padding: 16px 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 25px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); flex-wrap: wrap; }
+        .filter-bar label { font-weight: 600; font-family: 'Cinzel', serif; color: var(--primary); font-size: 0.95rem; white-space: nowrap; }
+        .filter-bar select { max-width: 350px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.95rem; flex: 1; }
+        .print-buttons-container { display: flex; gap: 10px; margin-left: auto; }
+        .btn-print { background-color: var(--primary); color: #ffffff; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .btn-print:hover { background-color: var(--primary-light); }
+        footer { background-color: var(--primary); color: #ffffff; text-align: center; padding: 25px; margin-top: auto; border-top: 3px solid var(--accent); }
+        .copyright { margin: 0; color: #94a3b8; font-size: 0.85rem; }
         @media print {
-            body { background: white !important; }
-            .filter-bar, footer, header { display: none !important; }
-            .card { border: none !important; box-shadow: none !important; }
-            .card-header { background: #0a2540 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { background-color: #ffffff; }
+            .header-main, .filter-bar, footer { display: none !important; }
+            .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .card { border: none !important; box-shadow: none !important; margin-bottom: 15px !important; }
         }
     </style>
 </head>
 <body>
     <header class="header-main">
-        <img src="golo.png" alt="Logo WSS" class="header-logo">
-        <div class="header-content">
-            <h1>Walbin Sánchez Enterprises</h1>
-            <p style="margin: 5px 0 0 0;">Consulta en Línea de Pólizas</p>
-        </div>
+        <h1>Espinoza y Asociados</h1>
+        <p>Sistema de Consulta de Pólizas en Línea</p>
+        <img src="logo.png" alt="Logo" class="brand-logo-header">
     </header>
 
     <div class="container">
-        <div class="filter-bar" style="background:#fff; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
-            <label style="font-weight:600; font-family:'Playfair Display', serif;">Filtrar Titular:</label>
-            <select id="filtroTitular" class="form-select" onchange="renderizarTablas()" style="max-width:250px;"><option value="TODOS">-- Todos --</option></select>
-            
-            <div style="display: flex; gap: 8px; margin-left: auto;">
-                <button type="button" class="btn-print" onclick="imprimirTitularActual()">🖨️ Imprimir Titular</button>
+        <div class="filter-bar">
+            <label for="filtroTitular">Seleccionar Titular:</label>
+            <select id="filtroTitular" class="form-select" onchange="renderizarTablasPublicas()">
+                <option value="TODOS">-- Todos los Titulares --</option>
+            </select>
+            <div class="print-buttons-container">
+                <button type="button" class="btn-print" onclick="imprimirTitular()">🖨️ Imprimir Titular</button>
                 <button type="button" class="btn-print" onclick="imprimirTodo()">🖨️ Imprimir Todo</button>
             </div>
         </div>
-        <div id="contenedorGrupos"></div>
+
+        <div id="contenedorGruposPublicos"></div>
     </div>
 
-    <footer><p>&copy; 2026 Espinoza y Asociados. Todos los derechos reservados.</p></footer>
+    <footer><p class="copyright">&copy; 2026 Espinoza y Asociados. Todos los derechos reservados.</p></footer>
 </body>
 </html>
