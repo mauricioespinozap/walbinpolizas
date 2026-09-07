@@ -416,7 +416,16 @@
         .header-logo { height: 55px; width: auto; object-fit: contain; }
         .container { max-width: 1400px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
         .dashboard-grid { display: grid; grid-template-columns: 360px 1fr; gap: 25px; }
-        @media (max-width: 992px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        
+        /* Corrección móvil estricta para evitar desbordes */
+        @media (max-width: 992px) { 
+            .dashboard-grid { grid-template-columns: 1fr; display: flex; flex-direction: column; } 
+            .header-main { flex-direction: column; gap: 10px; }
+            .filter-bar { flex-direction: column; align-items: stretch !important; }
+            .filter-bar > div { margin-left: 0 !important; width: 100%; justify-content: space-between; }
+            .filter-bar select { max-width: 100% !important; }
+        }
+
         .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .card-header { background: var(--primary); color: white; padding: 15px 20px; font-family: 'Playfair Display', serif; font-size: 1.1rem; }
         .card-body { padding: 20px; }
@@ -428,10 +437,9 @@
         .btn-primary:hover { background: var(--accent-hover); }
         .btn-outline-primary { background: transparent; color: var(--primary); border: 1px solid var(--border); margin-bottom: 4px; }
         .btn-outline-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-        .btn-print { background: var(--primary); color: white; width: auto; padding: 8px 12px; font-size: 0.85rem; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-print { background: var(--primary); color: white; width: auto; padding: 8px 12px; font-size: 0.85rem; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; gap: 5px; justify-content: center; }
         .btn-print:hover { background: var(--primary-light); }
         
-        /* Solución responsiva integrada para admin.html */
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 850px; }
         
