@@ -219,8 +219,12 @@
         .form-select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
         .btn-print { background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; padding: 8px 12px; font-size: 0.85rem; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; gap: 5px; }
         .btn-print:hover { background: var(--primary-light); }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
-        th { background: #f8f9fa; color: var(--primary); font-family: 'Playfair Display', serif; padding: 10px; border-bottom: 2px solid var(--border); }
+        
+        /* Solución para tablas responsivas sin alterar el diseño */
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 650px; }
+        
+        th { background: #f8f9fa; color: var(--primary); font-family: 'Playfair Display', serif; padding: 10px; border-bottom: 2px solid var(--border); white-space: nowrap; }
         td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
         .badge-vigente { background: #d4edda; color: #155724; }
@@ -261,4 +265,4 @@
 
     <footer><p>&copy; 2026 Espinoza y Asociados. Todos los derechos reservados.</p></footer>
 </body>
-</html> 
+</html>
