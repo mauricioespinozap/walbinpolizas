@@ -210,15 +210,25 @@
                 if (error) throw error;
 
                 let listaDB = polizasDB || [];
-                let numerosEnDB = new Set(listaDB.map(p => (p.Número || '').trim()));
                 let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
+                let mapUnicos = new Map();
 
-                let bcrFiltradas = polizasBCRIniciales.filter(p => {
-                    let num = (p.Número || '').trim();
-                    return !numerosEnDB.has(num) && !eliminadasLocales.includes(num);
+                listaDB.forEach(p => {
+                    let claveUnica = `${(p.Número||'').trim()}_${(p.Cliente||'').trim().toUpperCase()}_${(p.Tipo||'').trim().toUpperCase()}_${parseFloat(p.MontoPagar||0).toFixed(2)}_${(p.FechaVencimiento||'').trim()}`;
+                    mapUnicos.set(claveUnica, p);
                 });
 
-                todasLasPolizas = [...listaDB, ...bcrFiltradas];
+                polizasBCRIniciales.forEach(p => {
+                    let num = (p.Número || '').trim();
+                    if (!eliminadasLocales.includes(num)) {
+                        let claveUnica = `${num}_${(p.Cliente||'').trim().toUpperCase()}_${(p.Tipo||'').trim().toUpperCase()}_${parseFloat(p.MontoPagar||0).toFixed(2)}_${(p.FechaVencimiento||'').trim()}`;
+                        if (!mapUnicos.has(claveUnica)) {
+                            mapUnicos.set(claveUnica, p);
+                        }
+                    }
+                });
+
+                todasLasPolizas = Array.from(mapUnicos.values());
                 actualizarFiltroTitulares();
                 renderizarTablas();
             } catch (error) {

@@ -241,21 +241,50 @@
             }
         };
 
-        // Comprobación exclusiva por número de póliza
-        async function verificarSiExistePoliza(numeroPoliza) {
-            if (!numeroPoliza) return true;
-            let limpio = String(numeroPoliza).trim();
+        // Verificador riguroso multicriterio (evita duplicados exactos idénticos)
+        async function existeDuplicadoMulticriterio(nueva) {
+            let numLimpio = String(nueva.Número || '').trim();
+            let clienteLimpio = String(nueva.Cliente || '').trim().toUpperCase();
+            let tipoLimpio = String(nueva.Tipo || '').trim().toUpperCase();
+            let primaLimpia = parseFloat(nueva.MontoPagar || 0).toFixed(2);
+            let vencLimpia = String(nueva.FechaVencimiento || '').trim();
 
             let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
-            if (eliminadasLocales.includes(limpio)) return false; 
 
-            // 1. Revisar si el número de póliza ya existe en el arreglo activo del BCR
-            let encontradaBCR = polizasBCRIniciales.some(p => String(p.Número).trim() === limpio);
-            if (encontradaBCR) return true;
+            // 1. Verificar contra arreglo base BCR inicial
+            for (let p of polizasBCRIniciales) {
+                let pNum = String(p.Número || '').trim();
+                if (eliminadasLocales.includes(pNum)) continue;
 
-            // 2. Revisar si el número de póliza ya existe en la base de datos de Supabase
-            const { data, error } = await db.from('Polizas').select('id').eq('Número', limpio).maybeSingle();
-            if (data) return true;
+                let pCliente = String(p.Cliente || '').trim().toUpperCase();
+                let pTipo = String(p.Tipo || '').trim().toUpperCase();
+                let pPrima = parseFloat(p.MontoPagar || 0).toFixed(2);
+                let pVenc = String(p.FechaVencimiento || '').trim();
+
+                if (pNum === numLimpio && pCliente === clienteLimpio && pTipo === tipoLimpio && pPrima === primaLimpia && pVenc === vencLimpia) {
+                    return true;
+                }
+            }
+
+            // 2. Verificar contra base de datos en Supabase
+            try {
+                const { data: polizasDB, error } = await db.from('Polizas').select('*');
+                if (!error && polizasDB) {
+                    for (let p of polizasDB) {
+                        let pNum = String(p.Número || '').trim();
+                        let pCliente = String(p.Cliente || '').trim().toUpperCase();
+                        let pTipo = String(p.Tipo || '').trim().toUpperCase();
+                        let pPrima = parseFloat(p.MontoPagar || 0).toFixed(2);
+                        let pVenc = String(p.FechaVencimiento || '').trim();
+
+                        if (pNum === numLimpio && pCliente === clienteLimpio && pTipo === tipoLimpio && pPrima === primaLimpia && pVenc === vencLimpia) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Error consultando Supabase para duplicados:", err);
+            }
 
             return false;
         }
@@ -337,23 +366,14 @@
                         let r = rows[i];
                         if (!r || !r[6]) continue;
 
-                        let numPoliza = String(r[6] || '').trim();
+                        let tipoDetectado = String(r[4] || 'Otros').toUpperCase().includes('VEHIC') ? 'Vehiculo' : 
+                                            String(r[4] || '').toUpperCase().includes('VIVIENDA') || String(r[4] || '').toUpperCase().includes('INCENDIO') ? 'Vivienda' : 'Otros';
 
-                        // Validación exclusiva por número de póliza
-                        let yaExiste = await verificarSiExistePoliza(numPoliza);
-                        if (yaExiste) {
-                            countOmitidas++;
-                            continue;
-                        }
-
-                        let clienteProcesado = String(r[2] || 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.').trim();
-
-                        let nuevaPoliza = {
-                            Número: numPoliza,
-                            Cliente: clienteProcesado,
+                        let candidato = {
+                            Número: String(r[6] || '').trim(),
+                            Cliente: String(r[2] || 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.').trim(),
                             Aseguradora: 'I.N.S.',
-                            Tipo: String(r[4] || 'Otros').toUpperCase().includes('VEHIC') ? 'Vehiculo' : 
-                                  String(r[4] || '').toUpperCase().includes('VIVIENDA') || String(r[4] || '').toUpperCase().includes('INCENDIO') ? 'Vivienda' : 'Otros',
+                            Tipo: tipoDetectado,
                             DetalleTipo: String(r[9] || '').trim(),
                             MontoPagar: parseFloat(r[7]) || 0,
                             MonedaPagar: '¢',
@@ -362,11 +382,18 @@
                             Observaciones: `Método cobro: ${String(r[8] || 'COBROS')}`
                         };
 
-                        const { error } = await db.from('Polizas').insert([nuevaPoliza]);
+                        // Comprobación rigurosa de duplicado idéntico
+                        let esDuplicadoExacto = await existeDuplicadoMulticriterio(candidato);
+                        if (esDuplicadoExacto) {
+                            countOmitidas++;
+                            continue; // Omitido automáticamente
+                        }
+
+                        const { error } = await db.from('Polizas').insert([candidato]);
                         if (!error) countNuevas++;
                     }
 
-                    alert(`Importación completada:\n- Pólizas nuevas agregadas: ${countNuevas}\n- Pólizas omitidas (mismo número ya existente): ${countOmitidas}`);
+                    alert(`Importación completada:\n- Pólizas nuevas agregadas: ${countNuevas}\n- Pólizas idénticas omitidas (evitadas duplicados): ${countOmitidas}`);
                     cargarPolizas();
                 } catch (error) {
                     alert("Error al leer el Excel: " + (error.message || error));
@@ -379,22 +406,11 @@
             e.preventDefault();
             const btn = document.getElementById('btnGuardar');
             const idEditando = document.getElementById('idEditando').value;
-            const numeroIngresado = document.getElementById('numero').value.trim();
 
             btn.textContent = 'Guardando...';
             btn.disabled = true;
 
             try {
-                if (!idEditando) {
-                    let yaExiste = await verificarSiExistePoliza(numeroIngresado);
-                    if (yaExiste) {
-                        alert(`El número de póliza "${numeroIngresado}" ya se encuentra registrado en el sistema.`);
-                        btn.textContent = 'Guardar Registro';
-                        btn.disabled = false;
-                        return;
-                    }
-                }
-
                 const tipoSeleccionado = document.getElementById('tipo').value;
                 let detalleAdicional = '';
 
@@ -417,7 +433,7 @@
                 }
 
                 const datosParaGuardar = {
-                    Número: numeroIngresado,
+                    Número: document.getElementById('numero').value.trim(),
                     Cliente: document.getElementById('cliente').value.trim(),
                     Aseguradora: document.getElementById('aseguradora').value,
                     Tipo: tipoSeleccionado,
@@ -442,6 +458,17 @@
                 let obsFinal = observacionesVal;
                 if (emisionVal) obsFinal = `[Emisión: ${emisionVal}] ` + obsFinal;
                 if (obsFinal) datosParaGuardar.Observaciones = obsFinal;
+
+                // Validación si es nuevo registro idéntico
+                if (!idEditando) {
+                    let yaExisteExacto = await existeDuplicadoMulticriterio(datosParaGuardar);
+                    if (yaExisteExacto) {
+                        alert('Ya existe un registro exactamente igual con estos mismos parámetros (Titular, Número de Póliza, Tipo, Prima y Fecha). No se permite duplicar.');
+                        btn.textContent = 'Guardar Registro';
+                        btn.disabled = false;
+                        return;
+                    }
+                }
 
                 if (idEditando && !String(idEditando).startsWith('bcr-')) {
                     const { error } = await db.from('Polizas').update(datosParaGuardar).eq('id', idEditando);
@@ -475,15 +502,29 @@
                 if (error) throw error;
 
                 let listaDB = polizasDB || [];
-                let numerosEnDB = new Set(listaDB.map(p => (p.Número || '').trim()));
                 let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
 
-                let bcrFiltradas = polizasBCRIniciales.filter(p => {
-                    let num = (p.Número || '').trim();
-                    return !numerosEnDB.has(num) && !eliminadasLocales.includes(num);
+                // Evitar duplicaciones internas visuales por si acaso
+                let mapUnicos = new Map();
+                
+                // Cargar Supabase
+                listaDB.forEach(p => {
+                    let claveUnica = `${(p.Número||'').trim()}_${(p.Cliente||'').trim().toUpperCase()}_${(p.Tipo||'').trim().toUpperCase()}_${parseFloat(p.MontoPagar||0).toFixed(2)}_${(p.FechaVencimiento||'').trim()}`;
+                    mapUnicos.set(claveUnica, p);
                 });
 
-                todasLasPolizas = [...listaDB, ...bcrFiltradas];
+                // Cargar BCR si no están eliminadas ni duplicadas exactamente
+                polizasBCRIniciales.forEach(p => {
+                    let num = (p.Número || '').trim();
+                    if (!eliminadasLocales.includes(num)) {
+                        let claveUnica = `${num}_${(p.Cliente||'').trim().toUpperCase()}_${(p.Tipo||'').trim().toUpperCase()}_${parseFloat(p.MontoPagar||0).toFixed(2)}_${(p.FechaVencimiento||'').trim()}`;
+                        if (!mapUnicos.has(claveUnica)) {
+                            mapUnicos.set(claveUnica, p);
+                        }
+                    }
+                });
+
+                todasLasPolizas = Array.from(mapUnicos.values());
                 actualizarFiltroTitulares();
                 renderizarTablas();
             } catch (error) {
