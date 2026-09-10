@@ -241,10 +241,12 @@
             }
         };
 
-        // Verificador estricto de duplicados basado en el número de póliza
         async function verificarSiExistePoliza(numeroPoliza) {
             if (!numeroPoliza) return true;
             let limpio = String(numeroPoliza).trim();
+
+            let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
+            if (eliminadasLocales.includes(limpio)) return false; // Si fue eliminada, permite reinsertarla
 
             let encontradaBCR = polizasBCRIniciales.some(p => String(p.Número).trim() === limpio);
             if (encontradaBCR) return true;
@@ -267,7 +269,7 @@
             try {
                 if (['xlsx', 'xls'].includes(extension)) {
                     await leerExcelUniversal(file);
-                    dropzoneText.innerHTML = `Importar Documento / OCR`;
+                    dropzoneText.innerHTML = `Importar Documento`;
                     return;
                 } else if (extension === 'docx') {
                     textoExtraido = await leerWord(file);
@@ -277,7 +279,7 @@
                     textoExtraido = await leerImagenOCR(file);
                 } else {
                     alert("Formato no soportado.");
-                    dropzoneText.innerHTML = `Importar Documento / OCR`;
+                    dropzoneText.innerHTML = `Importar Documento`;
                     return;
                 }
 
@@ -285,10 +287,10 @@
                     document.getElementById('observaciones').value = `[Extraído de ${file.name}]:\n` + textoExtraido.substring(0, 500);
                     alert(`¡Información extraída exitosamente de ${file.name}!\nSe ha incorporado al campo de observaciones.`);
                 }
-                dropzoneText.innerHTML = `Importar Documento / OCR`;
+                dropzoneText.innerHTML = `Importar Documento`;
             } catch (error) {
                 alert("Error al procesar el archivo: " + (error.message || error));
-                dropzoneText.innerHTML = `Importar Documento / OCR`;
+                dropzoneText.innerHTML = `Importar Documento`;
             }
         };
 
@@ -360,7 +362,7 @@
                         if (!error) countNuevas++;
                     }
 
-                    alert(`Importación completada:\n- Pólizas nuevas agregadas: ${countNuevas}\n- Pólizas omitidas (ya registradas por número): ${countOmitidas}`);
+                    alert(`Importación completada:\n- Pólizas nuevas agregadas: ${countNuevas}\n- Pólizas omitidas (ya registradas): ${countOmitidas}`);
                     cargarPolizas();
                 } catch (error) {
                     alert("Error al leer el Excel: " + (error.message || error));
@@ -379,11 +381,10 @@
             btn.disabled = true;
 
             try {
-                // Si es un registro nuevo, validamos que no exista el número de póliza
                 if (!idEditando) {
                     let yaExiste = await verificarSiExistePoliza(numeroIngresado);
                     if (yaExiste) {
-                        alert(`El número de póliza "${numeroIngresado}" ya se encuentra registrado en el sistema. No se permiten duplicados.`);
+                        alert(`El número de póliza "${numeroIngresado}" ya se encuentra registrado en el sistema.`);
                         btn.textContent = 'Guardar Registro';
                         btn.disabled = false;
                         return;
@@ -471,13 +472,20 @@
 
                 let listaDB = polizasDB || [];
                 let numerosEnDB = new Set(listaDB.map(p => (p.Número || '').trim()));
-                let bcrFiltradas = polizasBCRIniciales.filter(p => !numerosEnDB.has((p.Número || '').trim()));
+                let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
+
+                // Filtramos las del BCR excluyendo las que ya estén en Supabase o hayan sido borradas localmente
+                let bcrFiltradas = polizasBCRIniciales.filter(p => {
+                    let num = (p.Número || '').trim();
+                    return !numerosEnDB.has(num) && !eliminadasLocales.includes(num);
+                });
 
                 todasLasPolizas = [...listaDB, ...bcrFiltradas];
                 actualizarFiltroTitulares();
                 renderizarTablas();
             } catch (error) {
-                todasLasPolizas = polizasBCRIniciales;
+                let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
+                todasLasPolizas = polizasBCRIniciales.filter(p => !eliminadasLocales.includes((p.Número || '').trim()));
                 actualizarFiltroTitulares();
                 renderizarTablas();
             }
@@ -595,7 +603,7 @@
                             </td>
                             <td class="no-print" style="text-align: right;">
                                 <button class="btn-action btn-edit" onclick="editarPoliza('${p.id}')">Editar</button>
-                                <button class="btn-action btn-del" onclick="eliminarPoliza('${p.id}')">Eliminar</button>
+                                <button class="btn-action btn-del" onclick="eliminarPoliza('${p.id}', '${p.Número}')">Eliminar</button>
                             </td>
                         </tr>
                     `;
@@ -686,15 +694,30 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        window.eliminarPoliza = async function(id) {
-            if (confirm('¿Desea eliminar este registro?')) {
+        // Función de borrado con advertencia y persistencia real
+        window.eliminarPoliza = async function(id, numeroPoliza) {
+            const confirmacion = confirm(`⚠️ ADVERTENCIA: ¿Está seguro de que desea eliminar la póliza N° "${numeroPoliza}"?\n\nEsta acción eliminará el registro permanentemente del sistema.`);
+            
+            if (!confirmacion) return;
+
+            try {
                 if (String(id).startsWith('bcr-')) {
-                    todasLasPolizas = todasLasPolizas.filter(item => item.id !== id);
-                    renderizarTablas();
+                    // Si es una póliza estática inicial, la guardamos en localStorage para que no vuelva a aparecer
+                    let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
+                    if (!eliminadasLocales.includes(numeroPoliza)) {
+                        eliminadasLocales.push(numeroPoliza);
+                        localStorage.setItem('polizasEliminadasBCR', JSON.stringify(eliminadasLocales));
+                    }
                 } else {
-                    await db.from('Polizas').delete().eq('id', id);
-                    cargarPolizas();
+                    // Si está en Supabase, la borramos de la base de datos de manera definitiva
+                    const { error } = await db.from('Polizas').delete().eq('id', id);
+                    if (error) throw error;
                 }
+
+                alert('¡Póliza eliminada exitosamente del sistema!');
+                cargarPolizas();
+            } catch (error) {
+                alert("Error al eliminar el registro: " + (error.message || error));
             }
         };
 

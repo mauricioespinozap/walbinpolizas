@@ -211,13 +211,19 @@
 
                 let listaDB = polizasDB || [];
                 let numerosEnDB = new Set(listaDB.map(p => (p.Número || '').trim()));
-                let bcrFiltradas = polizasBCRIniciales.filter(p => !numerosEnDB.has((p.Número || '').trim()));
+                let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
+
+                let bcrFiltradas = polizasBCRIniciales.filter(p => {
+                    let num = (p.Número || '').trim();
+                    return !numerosEnDB.has(num) && !eliminadasLocales.includes(num);
+                });
 
                 todasLasPolizas = [...listaDB, ...bcrFiltradas];
                 actualizarFiltroTitulares();
                 renderizarTablas();
             } catch (error) {
-                todasLasPolizas = polizasBCRIniciales;
+                let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
+                todasLasPolizas = polizasBCRIniciales.filter(p => !eliminadasLocales.includes((p.Número || '').trim()));
                 actualizarFiltroTitulares();
                 renderizarTablas();
             }
