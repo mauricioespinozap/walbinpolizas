@@ -20,6 +20,186 @@
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Pólizas del BCR extraídas del Excel
+        const polizasBCRIniciales = [
+            {
+                id: 'bcr-1',
+                Número: '5016558',
+                Cliente: 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Otros',
+                DetalleTipo: 'RIESGOS DEL TRABAJO',
+                MontoPoliza: 19675848,
+                ValorPoliza: '¢19,675,848',
+                MontoPagar: 610851,
+                MonedaPagar: '¢',
+                Frecuencia: 'Anual',
+                FechaVencimiento: '2021-07-31',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 01/08/2020] Método cobro: COBROS. 8%, Tope anual ¢2 millones.'
+            },
+            {
+                id: 'bcr-2',
+                Número: '0118AUT0159974',
+                Cliente: 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vehiculo',
+                DetalleTipo: 'CL 433825',
+                MontoPoliza: 10102400,
+                ValorPoliza: '¢10,102,400',
+                MontoPagar: 205267,
+                MonedaPagar: '¢',
+                Frecuencia: 'Semestral',
+                FechaVencimiento: '2021-07-14',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 14/01/2021] OP CREDITO 596-01-02-5967529 / LIGADO 596-01-02-5967503'
+            },
+            {
+                id: 'bcr-3',
+                Número: '0218INC0016801',
+                Cliente: 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vivienda',
+                DetalleTipo: '5-208328-0',
+                MontoPoliza: 7453084,
+                ValorPoliza: '¢7,453,084',
+                MontoPagar: 7115.89,
+                MonedaPagar: '¢',
+                Frecuencia: 'Semestral',
+                FechaVencimiento: '2022-01-09',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 09/01/2021] Incendio Todo Riesgo. OP CREDITO 596-01-02-5967503'
+            },
+            {
+                id: 'bcr-4',
+                Número: '0118RCG0003094',
+                Cliente: 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Otros',
+                DetalleTipo: 'RESPONSABILIDAD CIVIL GENERAL',
+                MontoPoliza: 0,
+                ValorPoliza: 'L: ¢100M / O: ¢35M / P: ¢35M / R: ¢1.5M',
+                MontoPagar: 498007.85,
+                MonedaPagar: '¢',
+                Frecuencia: 'Anual',
+                FechaVencimiento: '2020-10-02',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 02/10/2019] Método cobro: COBROS.'
+            },
+            {
+                id: 'bcr-5',
+                Número: '0218RCG0000363',
+                Cliente: 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Otros',
+                DetalleTipo: 'RESPONSABILIDAD CIVIL PROF.',
+                MontoPoliza: 100000,
+                ValorPoliza: '$100,000',
+                MontoPagar: 5736.78,
+                MonedaPagar: '¢',
+                Frecuencia: 'Anual',
+                FechaVencimiento: '2021-06-22',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 22/06/2020] Método cobro: COBROS.'
+            },
+            {
+                id: 'bcr-6',
+                Número: '0118AUT0243361',
+                Cliente: 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vehiculo',
+                DetalleTipo: 'PRW (RANGE ROVER)',
+                MontoPoliza: 0,
+                ValorPoliza: 'No especificado',
+                MontoPagar: 542807,
+                MonedaPagar: '¢',
+                Frecuencia: 'Semestral',
+                FechaVencimiento: '2021-06-21',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 21/11/2020] Método cobro: COBROS.'
+            },
+            {
+                id: 'bcr-7',
+                Número: 'AU-206470-17074-0',
+                Cliente: 'CENTRO MEDICO SAN RAFAEL ARCANGEL S.A.',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vehiculo',
+                DetalleTipo: 'CRV 508',
+                MontoPoliza: 0,
+                ValorPoliza: 'No especificado',
+                MontoPagar: 21231.34,
+                MonedaPagar: '¢',
+                Frecuencia: 'Mensual',
+                FechaVencimiento: '2021-07-13',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 13/07/2020] Método cobro: COBROS.'
+            },
+            {
+                id: 'bcr-8',
+                Número: '0118AUT0257626',
+                Cliente: 'CMSRA (JEANNETTE BOJORGE)',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vehiculo',
+                DetalleTipo: 'BML 938',
+                MontoPoliza: 0,
+                ValorPoliza: 'No especificado',
+                MontoPagar: 204850,
+                MonedaPagar: '¢',
+                Frecuencia: 'Semestral',
+                FechaVencimiento: '2021-07-07',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 01/01/2021] Automóviles LAFISE. Método cobro: COBROS.'
+            },
+            {
+                id: 'bcr-9',
+                Número: '0118AUT0186711',
+                Cliente: 'WALBIN SANCHEZ SOLIS',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vehiculo',
+                DetalleTipo: 'SIN 36700',
+                MontoPoliza: 73597860,
+                ValorPoliza: '¢73,597,860',
+                MontoPagar: 885554,
+                MonedaPagar: '¢',
+                Frecuencia: 'Semestral',
+                FechaVencimiento: '2021-06-05',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 05/12/2020] Ligado op crédito, no cobra 596-01-02-5967529 / 596-01-02-5967503'
+            },
+            {
+                id: 'bcr-10',
+                Número: '0118INC0575645',
+                Cliente: 'WALBIN SANCHEZ SOLIS',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vivienda',
+                DetalleTipo: '5-137672',
+                MontoPoliza: 310000000,
+                ValorPoliza: '¢310,000,000',
+                MontoPagar: 765872,
+                MonedaPagar: '¢',
+                Frecuencia: 'Anual',
+                FechaVencimiento: '2022-03-27',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 27/03/2021] Incendio Hogar Comprensivo. OP CREDITO 596-01-02-5967503'
+            },
+            {
+                id: 'bcr-11',
+                Número: 'BFCR003465',
+                Cliente: 'WALBIN SANCHEZ SOLIS',
+                Aseguradora: 'I.N.S.',
+                Tipo: 'Vida',
+                DetalleTipo: '',
+                MontoPoliza: 0,
+                ValorPoliza: 'No especificado',
+                MontoPagar: 6208.49,
+                MonedaPagar: '¢',
+                Frecuencia: 'Anual',
+                FechaVencimiento: '2021-07-13',
+                Estado: 'Activa',
+                Observaciones: '[Emisión: 13/01/2021] Póliza de Vida BCR. Método cobro: COBROS.'
+            }
+        ];
+
         let todasLasPolizas = [];
 
         window.manejarTipoPoliza = function() {
@@ -143,7 +323,7 @@
             if (obsFinal) datosParaGuardar.Observaciones = obsFinal;
 
             try {
-                if (idEditando) {
+                if (idEditando && !String(idEditando).startsWith('bcr-')) {
                     const { error } = await db.from('Polizas').update(datosParaGuardar).eq('id', idEditando);
                     if (error) throw error;
                     document.getElementById('idEditando').value = '';
@@ -171,14 +351,21 @@
             contenedor.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 40px;">Cargando registros...</div>`;
 
             try {
-                const { data: polizas, error } = await db.from('Polizas').select('*');
+                const { data: polizasDB, error } = await db.from('Polizas').select('*');
                 if (error) throw error;
 
-                todasLasPolizas = polizas || [];
+                // Combinamos Supabase y las pólizas BCR del Excel asegurando que no se dupliquen por número de póliza
+                let listaDB = polizasDB || [];
+                let numerosEnDB = new Set(listaDB.map(p => (p.Número || '').trim()));
+                let bcrFiltradas = polizasBCRIniciales.filter(p => !numerosEnDB.has((p.Número || '').trim()));
+
+                todasLasPolizas = [...listaDB, ...bcrFiltradas];
                 actualizarFiltroTitulares();
                 renderizarTablas();
             } catch (error) {
-                contenedor.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 40px;">Error al conectar con la base de datos.</div>`;
+                todasLasPolizas = polizasBCRIniciales;
+                actualizarFiltroTitulares();
+                renderizarTablas();
             }
         };
 
@@ -344,53 +531,61 @@
         };
 
         window.editarPoliza = function(id) {
-            db.from('Polizas').select('*').eq('id', id).single().then(({ data: p }) => {
-                if (!p) return;
-                document.getElementById('idEditando').value = p.id;
-                document.getElementById('numero').value = p.Número || '';
-                document.getElementById('cliente').value = p.Cliente || '';
-                document.getElementById('aseguradora').value = p.Aseguradora || '';
-                document.getElementById('tipo').value = p.Tipo || 'Vida';
-                manejarTipoPoliza();
-                
-                setTimeout(() => {
-                    if (p.Tipo === 'Vehiculo' && document.getElementById('detallePlaca')) {
-                        document.getElementById('detallePlaca').value = p.DetalleTipo || '';
-                    } else if (p.Tipo === 'Vivienda' && document.getElementById('detalleFinca')) {
-                        document.getElementById('detalleFinca').value = p.DetalleTipo || '';
-                    } else if (p.Tipo === 'Otros' && document.getElementById('detalleOtro')) {
-                        document.getElementById('detalleOtro').value = p.DetalleTipo || '';
-                    }
-                }, 50);
-
-                document.getElementById('montoPoliza').value = p.MontoPoliza || '';
-                document.getElementById('valorPoliza').value = p.ValorPoliza || '';
-                document.getElementById('montoPagar').value = p.MontoPagar || '';
-                document.getElementById('vencimiento').value = p.FechaVencimiento || '';
-                document.getElementById('estado').value = p.Estado || 'Activa';
-                document.getElementById('beneficiario1').value = p.Beneficiario1 || '';
-                document.getElementById('beneficiario2').value = p.Beneficiario2 || '';
-                document.getElementById('beneficiario3').value = p.Beneficiario3 || '';
-                
-                let obsRaw = p.Observaciones || '';
-                if (obsRaw.startsWith('[Emisión:')) {
-                    let fin = obsRaw.indexOf(']');
-                    document.getElementById('emision').value = obsRaw.substring(9, fin).trim();
-                    document.getElementById('observaciones').value = obsRaw.substring(fin + 1).trim();
-                } else {
-                    document.getElementById('emision').value = '';
-                    document.getElementById('observaciones').value = obsRaw;
-                }
-
-                document.getElementById('btnGuardar').textContent = 'Actualizar Registro';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+            let p = todasLasPolizas.find(item => item.id == id);
+            if (!p) return;
+            cargarFormularioEdicion(p);
         };
+
+        function cargarFormularioEdicion(p) {
+            document.getElementById('idEditando').value = p.id;
+            document.getElementById('numero').value = p.Número || '';
+            document.getElementById('cliente').value = p.Cliente || '';
+            document.getElementById('aseguradora').value = p.Aseguradora || '';
+            document.getElementById('tipo').value = p.Tipo || 'Vida';
+            manejarTipoPoliza();
+            
+            setTimeout(() => {
+                if (p.Tipo === 'Vehiculo' && document.getElementById('detallePlaca')) {
+                    document.getElementById('detallePlaca').value = p.DetalleTipo || '';
+                } else if (p.Tipo === 'Vivienda' && document.getElementById('detalleFinca')) {
+                    document.getElementById('detalleFinca').value = p.DetalleTipo || '';
+                } else if (p.Tipo === 'Otros' && document.getElementById('detalleOtro')) {
+                    document.getElementById('detalleOtro').value = p.DetalleTipo || '';
+                }
+            }, 50);
+
+            document.getElementById('montoPoliza').value = p.MontoPoliza || '';
+            document.getElementById('valorPoliza').value = p.ValorPoliza || '';
+            document.getElementById('montoPagar').value = p.MontoPagar || '';
+            document.getElementById('vencimiento').value = p.FechaVencimiento || '';
+            document.getElementById('estado').value = p.Estado || 'Activa';
+            document.getElementById('beneficiario1').value = p.Beneficiario1 || '';
+            document.getElementById('beneficiario2').value = p.Beneficiario2 || '';
+            document.getElementById('beneficiario3').value = p.Beneficiario3 || '';
+            
+            let obsRaw = p.Observaciones || '';
+            if (obsRaw.startsWith('[Emisión:')) {
+                let fin = obsRaw.indexOf(']');
+                document.getElementById('emision').value = obsRaw.substring(9, fin).trim();
+                document.getElementById('observaciones').value = obsRaw.substring(fin + 1).trim();
+            } else {
+                document.getElementById('emision').value = '';
+                document.getElementById('observaciones').value = obsRaw;
+            }
+
+            document.getElementById('btnGuardar').textContent = 'Actualizar Registro';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         window.eliminarPoliza = async function(id) {
             if (confirm('¿Desea eliminar este registro?')) {
-                await db.from('Polizas').delete().eq('id', id);
-                cargarPolizas();
+                if (String(id).startsWith('bcr-')) {
+                    todasLasPolizas = todasLasPolizas.filter(item => item.id !== id);
+                    renderizarTablas();
+                } else {
+                    await db.from('Polizas').delete().eq('id', id);
+                    cargarPolizas();
+                }
             }
         };
 
@@ -421,7 +616,6 @@
         .container { max-width: 1400px; margin: 25px auto; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
         .dashboard-grid { display: grid; grid-template-columns: 360px 1fr; gap: 25px; }
         
-        /* Corrección móvil estricta para evitar desbordes */
         @media (max-width: 992px) { 
             .dashboard-grid { grid-template-columns: 1fr; display: flex; flex-direction: column; } 
             .header-main { flex-direction: column; gap: 10px; }
