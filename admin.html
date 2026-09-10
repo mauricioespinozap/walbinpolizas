@@ -241,16 +241,19 @@
             }
         };
 
+        // Comprobación exclusiva por número de póliza
         async function verificarSiExistePoliza(numeroPoliza) {
             if (!numeroPoliza) return true;
             let limpio = String(numeroPoliza).trim();
 
             let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
-            if (eliminadasLocales.includes(limpio)) return false; // Si fue eliminada, permite reinsertarla
+            if (eliminadasLocales.includes(limpio)) return false; 
 
+            // 1. Revisar si el número de póliza ya existe en el arreglo activo del BCR
             let encontradaBCR = polizasBCRIniciales.some(p => String(p.Número).trim() === limpio);
             if (encontradaBCR) return true;
 
+            // 2. Revisar si el número de póliza ya existe en la base de datos de Supabase
             const { data, error } = await db.from('Polizas').select('id').eq('Número', limpio).maybeSingle();
             if (data) return true;
 
@@ -336,6 +339,7 @@
 
                         let numPoliza = String(r[6] || '').trim();
 
+                        // Validación exclusiva por número de póliza
                         let yaExiste = await verificarSiExistePoliza(numPoliza);
                         if (yaExiste) {
                             countOmitidas++;
@@ -362,7 +366,7 @@
                         if (!error) countNuevas++;
                     }
 
-                    alert(`Importación completada:\n- Pólizas nuevas agregadas: ${countNuevas}\n- Pólizas omitidas (ya registradas): ${countOmitidas}`);
+                    alert(`Importación completada:\n- Pólizas nuevas agregadas: ${countNuevas}\n- Pólizas omitidas (mismo número ya existente): ${countOmitidas}`);
                     cargarPolizas();
                 } catch (error) {
                     alert("Error al leer el Excel: " + (error.message || error));
@@ -474,7 +478,6 @@
                 let numerosEnDB = new Set(listaDB.map(p => (p.Número || '').trim()));
                 let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
 
-                // Filtramos las del BCR excluyendo las que ya estén en Supabase o hayan sido borradas localmente
                 let bcrFiltradas = polizasBCRIniciales.filter(p => {
                     let num = (p.Número || '').trim();
                     return !numerosEnDB.has(num) && !eliminadasLocales.includes(num);
@@ -694,7 +697,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Función de borrado con advertencia y persistencia real
         window.eliminarPoliza = async function(id, numeroPoliza) {
             const confirmacion = confirm(`⚠️ ADVERTENCIA: ¿Está seguro de que desea eliminar la póliza N° "${numeroPoliza}"?\n\nEsta acción eliminará el registro permanentemente del sistema.`);
             
@@ -702,14 +704,12 @@
 
             try {
                 if (String(id).startsWith('bcr-')) {
-                    // Si es una póliza estática inicial, la guardamos en localStorage para que no vuelva a aparecer
                     let eliminadasLocales = JSON.parse(localStorage.getItem('polizasEliminadasBCR') || '[]');
                     if (!eliminadasLocales.includes(numeroPoliza)) {
                         eliminadasLocales.push(numeroPoliza);
                         localStorage.setItem('polizasEliminadasBCR', JSON.stringify(eliminadasLocales));
                     }
                 } else {
-                    // Si está en Supabase, la borramos de la base de datos de manera definitiva
                     const { error } = await db.from('Polizas').delete().eq('id', id);
                     if (error) throw error;
                 }
